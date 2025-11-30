@@ -9,6 +9,7 @@
     <li onclick="window.location.href='data_kelas.php'">Data Kelas</li>
     <li onclick="window.location.href='data_absensi.php'">Data Absensi</li>
     <li onclick="window.location.href='list_dosen.php'">List Dosen</li>
+    <li onclick="window.location.href='assign_mahasiswa_dosen.php'">Assign Mahasiswa ke Dosen</li>
     <li onclick="window.location.href='jam.php'">list Jam Absensi</li>
     <li onclick="window.location.href='logout.php'">Logout</li>
   </ul>

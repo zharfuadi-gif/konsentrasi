@@ -88,10 +88,14 @@ if ($now > $jamSelesai) {
     exit;
 }
 
+// Variabel untuk menyimpan menit keterlambatan
+$menitTerlambat = 0;
+
 // Tepat waktu ≤ 2 menit
 if ($now <= $batasHadir) {
     $status = "Hadir";
     $info = "";
+    $menitTerlambat = 0;
 }
 // Terlambat tapi masih dalam jam kuliah
 elseif ($now <= $jamSelesai) {
@@ -114,7 +118,8 @@ if (mysqli_num_rows($cek) > 0) {
         "UPDATE absensi_231051 SET 
             id_matakuliah_231051='$id_mk',
             id_jam_231051='$id_jam',
-            status_231051='$status'
+            status_231051='$status',
+            keterlambatan_menit_231051='$menitTerlambat'
          WHERE id_absensi_231051='{$row['id_absensi_231051']}'"
     );
 
@@ -129,9 +134,9 @@ if (mysqli_num_rows($cek) > 0) {
     // ===== INSERT jika belum ada baris apapun =====
     $insert = mysqli_query($conn,
         "INSERT INTO absensi_231051 
-            (id_mahasiswa_231051, id_matakuliah_231051, id_jam_231051, tanggal_231051, status_231051)
+            (id_mahasiswa_231051, id_matakuliah_231051, id_jam_231051, tanggal_231051, status_231051, keterlambatan_menit_231051)
          VALUES 
-            ('$id_mahasiswa', '$id_mk', '$id_jam', '$tanggal', '$status')"
+            ('$id_mahasiswa', '$id_mk', '$id_jam', '$tanggal', '$status', '$menitTerlambat')"
     );
 
     if ($insert) {

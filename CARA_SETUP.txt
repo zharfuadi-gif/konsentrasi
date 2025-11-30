@@ -1,0 +1,81 @@
+╔══════════════════════════════════════════════════════════════════╗
+║  CARA SETUP FITUR BARU - TRACKING KETERLAMBATAN & MAHASISWA ALFA ║
+╚══════════════════════════════════════════════════════════════════╝
+
+📌 LANGKAH INSTALASI (WAJIB):
+
+1️⃣  BUKA PHPMYADMIN
+    - Akses: http://localhost/phpmyadmin
+    - Login dengan user MySQL Anda
+
+2️⃣  PILIH DATABASE
+    - Klik database: absensiqr_231051
+
+3️⃣  JALANKAN SQL QUERY
+    - Klik tab "SQL" di bagian atas
+    - Copy-paste query berikut:
+
+    ALTER TABLE absensi_231051 
+    ADD COLUMN keterlambatan_menit_231051 INT DEFAULT 0 
+    COMMENT 'Jumlah menit keterlambatan (0 jika tidak terlambat)';
+
+    - Klik tombol "Go" atau "Kirim"
+
+4️⃣  VERIFIKASI
+    - Klik tabel "absensi_231051"
+    - Pastikan kolom "keterlambatan_menit_231051" sudah ada
+
+5️⃣  SELESAI!
+    - Refresh browser
+    - Login sebagai dosen
+    - Fitur baru sudah bisa digunakan
+
+═══════════════════════════════════════════════════════════════════
+
+✨ FITUR BARU YANG TERSEDIA:
+
+🚫 LIHAT MAHASISWA ALFA (TIDAK HADIR)
+   - Buka Dashboard Dosen → Tab Absensi
+   - Pilih "Alfa (Tidak Hadir)" di dropdown Status
+   - Klik Filter
+   - Mahasiswa alfa ditampilkan dengan background merah
+
+⏰ LIHAT KETERLAMBATAN MAHASISWA
+   - Di tabel absensi, ada kolom "Keterlambatan_Menit"
+   - Menampilkan berapa menit mahasiswa terlambat
+   - Otomatis tercatat saat mahasiswa scan QR Code
+
+📊 STATISTIK REAL-TIME
+   - Kartu statistik di bagian atas menampilkan:
+     * Jumlah mahasiswa Alfa
+     * Jumlah mahasiswa Terlambat
+     * Jumlah mahasiswa Hadir
+     * Jumlah mahasiswa Izin
+
+🔍 FILTER LANJUTAN
+   - Filter berdasarkan Mata Kuliah
+   - Filter berdasarkan Status Kehadiran
+   - Kombinasi kedua filter
+
+═══════════════════════════════════════════════════════════════════
+
+❓ TROUBLESHOOTING:
+
+Problem: Error "Unknown column 'keterlambatan_menit_231051'"
+Solusi:  Anda belum jalankan SQL query di langkah 3. 
+         Ulangi dari langkah 1.
+
+Problem: Tabel tidak muncul warna-warni
+Solusi:  Clear cache browser (Ctrl + Shift + Delete)
+         Atau hard refresh (Ctrl + F5)
+
+Problem: Filter tidak bekerja
+Solusi:  Pastikan Anda klik tombol "Filter" setelah 
+         memilih dropdown
+
+═══════════════════════════════════════════════════════════════════
+
+📞 BUTUH BANTUAN?
+   Baca dokumentasi lengkap di file: FITUR_BARU_ABSENSI.md
+
+═══════════════════════════════════════════════════════════════════
