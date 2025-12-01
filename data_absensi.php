@@ -162,8 +162,10 @@ if (isset($_POST['simpan_semua'])) {
   <select name="status" required>
     <option value="">-- Pilih Status --</option>
     <option value="Hadir" <?= $edit['status']=="Hadir"?"selected":""; ?>>Hadir</option>
+    <option value="Terlambat" <?= $edit['status']=="Terlambat"?"selected":""; ?>>Terlambat</option>
     <option value="Izin" <?= $edit['status']=="Izin"?"selected":""; ?>>Izin</option>
     <option value="Alfa" <?= $edit['status']=="Alfa"?"selected":""; ?>>Alfa</option>
+    <option value="Sakit" <?= $edit['status']=="Sakit"?"selected":""; ?>>Sakit</option>
   </select>
 
   <button type="submit" name="simpan"><?= $editMode ? "💾 Simpan Perubahan" : "➕ Tambah Absensi"; ?></button>
@@ -271,8 +273,10 @@ function buatFormBulk(){
       <select name="status_multi[]" required>
         <option value="">-- Status --</option>
         <option value="Hadir">Hadir</option>
+        <option value="Terlambat">Terlambat</option>
         <option value="Izin">Izin</option>
         <option value="Alfa">Alfa</option>
+        <option value="Sakit">Sakit</option>
       </select>
 
       <hr>

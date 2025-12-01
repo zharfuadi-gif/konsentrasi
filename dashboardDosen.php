@@ -54,13 +54,14 @@ function render_table_from_result($result)
 
   echo "<table><thead><tr>";
   foreach ($fields as $f) echo "<th>" . htmlspecialchars($f->name) . "</th>";
+  echo "<th>Aksi</th>"; // Tambah kolom untuk aksi
   echo "</tr></thead><tbody>";
 
   while ($row = mysqli_fetch_assoc($result)) {
     // Tentukan class CSS berdasarkan status
     $rowClass = "";
     $status = $row['Status'] ?? '';
-    
+
     if ($status == 'Alfa') {
       $rowClass = "status-alfa";
     } elseif ($status == 'Terlambat') {
@@ -69,13 +70,15 @@ function render_table_from_result($result)
       $rowClass = "status-hadir";
     } elseif ($status == 'Izin') {
       $rowClass = "status-izin";
+    } elseif ($status == 'Sakit') {
+      $rowClass = "status-sakit";
     }
-    
+
     echo "<tr class='$rowClass'>";
     foreach ($fields as $f) {
       $col = $f->name;
       $value = $row[$col] ?? '';
-      
+
       // Format kolom Keterlambatan_Menit
       if ($col == 'Keterlambatan_Menit') {
         if ($value > 0) {
@@ -83,7 +86,7 @@ function render_table_from_result($result)
         } else {
           echo "<td>-</td>";
         }
-      } 
+      }
       // Tambahkan emoji untuk status
       elseif ($col == 'Status') {
         $icon = '';
@@ -91,12 +94,23 @@ function render_table_from_result($result)
         elseif ($value == 'Terlambat') $icon = '⏰ ';
         elseif ($value == 'Hadir') $icon = '✅ ';
         elseif ($value == 'Izin') $icon = '📋 ';
-        echo "<td><b>" . $icon . htmlspecialchars($value) . "</b></td>";
-      } 
+        elseif ($value == 'Sakit') $icon = '🤒 ';
+        echo "<td id='status_" . $row['ID_Absensi'] . "'><b>" . $icon . htmlspecialchars($value) . "</b></td>";
+      }
       else {
         echo "<td>" . htmlspecialchars($value) . "</td>";
       }
     }
+    // Kolom aksi untuk mengubah status
+    echo "<td>
+      <select onchange='updateStatus(" . $row['ID_Absensi'] . ", this.value)' style='padding:5px; border-radius:4px;'>
+        <option value='Hadir' " . ($status == 'Hadir' ? 'selected' : '') . ">✅ Hadir</option>
+        <option value='Terlambat' " . ($status == 'Terlambat' ? 'selected' : '') . ">⏰ Terlambat</option>
+        <option value='Alfa' " . ($status == 'Alfa' ? 'selected' : '') . ">🚫 Alfa</option>
+        <option value='Izin' " . ($status == 'Izin' ? 'selected' : '') . ">📋 Izin</option>
+        <option value='Sakit' " . ($status == 'Sakit' ? 'selected' : '') . ">🤒 Sakit</option>
+      </select>
+    </td>";
     echo "</tr>";
   }
 
@@ -142,6 +156,7 @@ if (isset($_POST['generate'])) {
     .status-terlambat { background: #fff3e0; color: #e65100; }
     .status-hadir { background: #e8f5e9; color: #2e7d32; }
     .status-izin { background: #e3f2fd; color: #1565c0; }
+    .status-sakit { background: #f3e5f5; color: #7b1fa2; }
     .stats-container { display: flex; gap: 15px; margin: 20px 0; flex-wrap: wrap; }
     .stat-card { flex: 1; min-width: 150px; padding: 15px; border-radius: 8px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .stat-card h3 { margin: 0 0 5px 0; font-size: 32px; }
@@ -190,18 +205,21 @@ if (isset($_POST['generate'])) {
                 m.nama_mahasiswa_231051,
                 m.nim_231051,
                 m.kelas_231051,
-                (SELECT COUNT(*) FROM absensi_231051 
-                 WHERE id_mahasiswa_231051 = m.id_mahasiswa_231051 
+                (SELECT COUNT(*) FROM absensi_231051
+                 WHERE id_mahasiswa_231051 = m.id_mahasiswa_231051
                  AND status_231051 = 'Alfa') as total_alfa,
-                (SELECT COUNT(*) FROM absensi_231051 
-                 WHERE id_mahasiswa_231051 = m.id_mahasiswa_231051 
+                (SELECT COUNT(*) FROM absensi_231051
+                 WHERE id_mahasiswa_231051 = m.id_mahasiswa_231051
                  AND status_231051 = 'Hadir') as total_hadir,
-                (SELECT COUNT(*) FROM absensi_231051 
-                 WHERE id_mahasiswa_231051 = m.id_mahasiswa_231051 
+                (SELECT COUNT(*) FROM absensi_231051
+                 WHERE id_mahasiswa_231051 = m.id_mahasiswa_231051
                  AND status_231051 = 'Terlambat') as total_terlambat,
-                (SELECT COUNT(*) FROM absensi_231051 
-                 WHERE id_mahasiswa_231051 = m.id_mahasiswa_231051 
-                 AND status_231051 = 'Izin') as total_izin
+                (SELECT COUNT(*) FROM absensi_231051
+                 WHERE id_mahasiswa_231051 = m.id_mahasiswa_231051
+                 AND status_231051 = 'Izin') as total_izin,
+                (SELECT COUNT(*) FROM absensi_231051
+                 WHERE id_mahasiswa_231051 = m.id_mahasiswa_231051
+                 AND status_231051 = 'Sakit') as total_sakit
             FROM dosen_mahasiswa_231051 dm
             JOIN mahasiswa_231051 m ON dm.id_mahasiswa_231051 = m.id_mahasiswa_231051
             WHERE dm.id_dosen_231051 = '$id_dosen'
@@ -250,6 +268,7 @@ if (isset($_POST['generate'])) {
                     <th>✅ Hadir</th>
                     <th>⏰ Terlambat</th>
                     <th>📋 Izin</th>
+                    <th>🤒 Sakit</th>
                 </tr>
             </thead>
             <tbody>
@@ -266,6 +285,7 @@ if (isset($_POST['generate'])) {
                     <td class="status-hadir"><b><?= $student['total_hadir'] ?></b></td>
                     <td class="status-terlambat"><b><?= $student['total_terlambat'] ?></b></td>
                     <td class="status-izin"><b><?= $student['total_izin'] ?></b></td>
+                    <td class="status-sakit"><b><?= $student['total_sakit'] ?></b></td>
                 </tr>
                 <?php endwhile; ?>
             </tbody>
@@ -302,7 +322,7 @@ $statQuery = mysqli_query($conn, "
     GROUP BY status_231051
 ");
 
-$stats = ['Hadir' => 0, 'Alfa' => 0, 'Terlambat' => 0, 'Izin' => 0];
+$stats = ['Hadir' => 0, 'Alfa' => 0, 'Terlambat' => 0, 'Izin' => 0, 'Sakit' => 0];
 while ($s = mysqli_fetch_assoc($statQuery)) {
     $stats[$s['status_231051']] = $s['jumlah'];
 }
@@ -325,6 +345,10 @@ while ($s = mysqli_fetch_assoc($statQuery)) {
     <div class="stat-card stat-izin">
       <h3><?= $stats['Izin'] ?></h3>
       <p>📋 Izin</p>
+    </div>
+    <div class="stat-card stat-sakit">
+      <h3><?= $stats['Sakit'] ?></h3>
+      <p>🤒 Sakit</p>
     </div>
   </div>
 
@@ -353,6 +377,7 @@ while ($s = mysqli_fetch_assoc($statQuery)) {
             <option value="Terlambat" <?= $selectedStatus == 'Terlambat' ? 'selected' : '' ?>>⏰ Terlambat</option>
             <option value="Hadir" <?= $selectedStatus == 'Hadir' ? 'selected' : '' ?>>✅ Hadir</option>
             <option value="Izin" <?= $selectedStatus == 'Izin' ? 'selected' : '' ?>>📋 Izin</option>
+            <option value="Sakit" <?= $selectedStatus == 'Sakit' ? 'selected' : '' ?>>🤒 Sakit</option>
         </select>
         
         <button type="submit">Filter</button>
@@ -362,7 +387,7 @@ while ($s = mysqli_fetch_assoc($statQuery)) {
 
 <?php
 /* ============================================================
-   AUTO INSERT ALFA UNTUK MAHASISWA YANG BELUM ABSEN
+   AUTO INSERT ALFA/TERLAMBAT UNTUK MAHASISWA YANG BELUM ABSEN
    ============================================================ */
 
 date_default_timezone_set("Asia/Makassar");
@@ -382,10 +407,11 @@ $hariMap = [
 $hariDB = $hariMap[$hariIni];
 
 $queryJadwalHariIni = mysqli_query($conn, "
-    SELECT 
+    SELECT
         mk.id_matakuliah_231051,
         mk.id_kelas_231051,
         j.id_jam_231051,
+        j.jam_mulai_231051,
         j.jam_selesai_231051
     FROM matakuliah_231051 mk
     JOIN jam_231051 j ON mk.id_jam_231051 = j.id_jam_231051
@@ -396,6 +422,7 @@ $now = time();
 
 while ($jd = mysqli_fetch_assoc($queryJadwalHariIni)) {
 
+    $jamMulai = strtotime($jd['jam_mulai_231051']);
     $jamSelesai = strtotime($jd['jam_selesai_231051']);
 
     if ($now < $jamSelesai) continue;
@@ -414,7 +441,7 @@ while ($jd = mysqli_fetch_assoc($queryJadwalHariIni)) {
         $idm = $m['id_mahasiswa_231051'];
 
         $cekAbsen = mysqli_query($conn, "
-            SELECT id_absensi_231051 
+            SELECT id_absensi_231051
             FROM absensi_231051
             WHERE id_mahasiswa_231051 = '$idm'
             AND tanggal_231051 = '$tanggalHariIni'
@@ -423,18 +450,23 @@ while ($jd = mysqli_fetch_assoc($queryJadwalHariIni)) {
         ");
 
         if (mysqli_num_rows($cekAbsen) == 0) {
+            // Student didn't attend at all, mark as Alfa (absent)
+            $status = 'Alfa';
+            // Set late time to 0 for students marked as absent
+            $menitTerlambat = 0;
+
             mysqli_query($conn, "
                 INSERT INTO absensi_231051
-                (id_mahasiswa_231051, id_matakuliah_231051, id_jam_231051, tanggal_231051, status_231051)
+                (id_mahasiswa_231051, id_matakuliah_231051, id_jam_231051, tanggal_231051, status_231051, keterlambatan_menit_231051)
                 VALUES
-                ('$idm', '$id_mk', '$id_jam', '$tanggalHariIni', 'Alfa')
+                ('$idm', '$id_mk', '$id_jam', '$tanggalHariIni', '$status', '$menitTerlambat')
             ");
         }
     }
 }
 
 /* ============================================================
-   END AUTO ALFA
+   END AUTO ALFA/TERLAMBAT
    ============================================================ */
 
 // ==== QUERY ABSENSI + FILTER MATA KULIAH ====
@@ -545,6 +577,68 @@ function openPage(name, el) {
 
   document.querySelectorAll('.tablink').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
+}
+
+function updateStatus(absensiId, newStatus) {
+  if (confirm('Apakah Anda yakin ingin mengubah status menjadi ' + newStatus + '?')) {
+    // Send AJAX request to update the status
+    fetch('updateStatus.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: 'id=' + encodeURIComponent(absensiId) + '&status=' + encodeURIComponent(newStatus)
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Update the status display in the table
+        document.getElementById('status_' + absensiId).innerHTML = '<b>' + getIconForStatus(newStatus) + newStatus + '</b>';
+        // Update row class if needed
+        updateRowClass(absensiId, newStatus);
+        alert('Status berhasil diubah menjadi ' + newStatus);
+      } else {
+        alert('Gagal mengubah status: ' + data.message);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Terjadi kesalahan saat mengubah status.');
+    });
+  } else {
+    // Reset to original value if user cancels
+    location.reload();
+  }
+}
+
+function getIconForStatus(status) {
+  switch(status) {
+    case 'Hadir': return '✅ ';
+    case 'Terlambat': return '⏰ ';
+    case 'Alfa': return '🚫 ';
+    case 'Izin': return '📋 ';
+    case 'Sakit': return '🤒 ';
+    default: return '';
+  }
+}
+
+function updateRowClass(absensiId, status) {
+  // Find the parent row and update its class based on status
+  var row = document.querySelector(`tr:has(td #status_${absensiId})`);
+  if (!row) {
+    // Alternative method to find the row
+    var allRows = document.querySelectorAll('tr');
+    for (var i = 0; i < allRows.length; i++) {
+      if (allRows[i].querySelector(`#status_${absensiId}`)) {
+        row = allRows[i];
+        break;
+      }
+    }
+  }
+
+  if (row) {
+    row.className = 'status-' + status.toLowerCase();
+  }
 }
 </script>
 

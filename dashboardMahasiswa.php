@@ -120,6 +120,9 @@ $absensiQuery = mysqli_query($conn, "
     .status{padding:5px 10px;border-radius:8px;font-size:13px;font-weight:600;}
     .status.hadir{background:#d1fae5;color:#065f46;}
     .status.alfa{background:#fee2e2;color:#991b1b;}
+    .status.terlambat{background:#fff3e0;color:#e65100;}
+    .status.izin{background:#e3f2fd;color:#1565c0;}
+    .status.sakit{background:#f3e5f5;color:#7b1fa2;}
 
     .content-section{display:none;}
     .content-section.active{display:block;}
@@ -232,7 +235,11 @@ $absensiQuery = mysqli_query($conn, "
           <?php
           if ($absensiQuery && mysqli_num_rows($absensiQuery) > 0) {
             while ($row = mysqli_fetch_assoc($absensiQuery)) {
-              $statusClass = strtolower($row['status_231051']) === 'hadir' ? 'hadir' : 'alfa';
+              $statusClass = strtolower($row['status_231051']);
+              // Make sure status class is valid
+              if (!in_array($statusClass, ['hadir', 'alfa', 'terlambat', 'izin', 'sakit'])) {
+                $statusClass = 'alfa'; // default to alfa if status is not recognized
+              }
               echo "<tr>
                 <td>{$row['tanggal_231051']}</td>
                 <td>{$row['nama_mk']}</td>
